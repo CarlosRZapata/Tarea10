@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { getUsuarios } from "../services/users";
-import { Form, Input, Table } from "antd";
+import { Form, Input, Table, Button, Drawer } from "antd";
 import { User } from "../models/users";
-import { Button, Drawer } from 'antd';
 import DrawerFooter from "./DrawerFooter";
 
 const TablaUsuarios: React.FC = () => {
