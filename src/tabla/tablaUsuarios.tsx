@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { getUsuarios } from "../services/users";
+import { getUsuarios, createUsuarios } from "../services/users";
 import { Form, Input, Table, Button, Drawer } from "antd";
 import { User } from "../models/users";
 import DrawerFooter from "./DrawerFooter";
 
 const TablaUsuarios: React.FC = () => {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState<boolean>(false);
+  const [users, setUsers] = useState<User[]>([]);
+  const [nombre, setNombre] = useState<string>(''); 
 
   const showDrawer = () => {
     setOpen(true);
@@ -15,64 +17,85 @@ const TablaUsuarios: React.FC = () => {
     setOpen(false);
   };
 
-  const [users, setUser] = useState<User[]>([]);
-
   useEffect(() => {
-    const fetchUser = async () => {
+    const fetchUsers = async () => {
       try {
-        const user = await getUsuarios();
-        setUser(user);
+        const fetchedUsers = await getUsuarios();
+        setUsers(fetchedUsers);
       } catch (error) {
-        console.error("Error fetching products:", error);
+        console.error("Error fetching users:", error);
       }
     };
 
-    fetchUser();
+    fetchUsers();
   }, []);
+
+  const handleSubmit = async () => {
+    try {
+      const nextId = users.reduce((maxId, user) => Math.max(maxId, user.id_usuario), 5) + 1;
+      const nuevoUsuario: User = {
+        id_usuario: nextId,  // Asegúrate de que esta propiedad es manejada correctamente en tu backend
+        nombre,
+        fecha_creacion: new Date(),
+        fecha_actualizacion: new Date(),
+      };
+      await createUsuarios(nuevoUsuario);
+      const updatedUsuarios = await getUsuarios();
+      setUsers(updatedUsuarios);
+      onClose();  // Cierra el Drawer después de crear el usuario
+    } catch (error) {
+      console.error("Error creating usuario:", error);
+    }
+  };
 
   const columns = [
     {
-        title: 'ID_Usuario',
-        dataIndex: 'id_usuario',
-        key: 'id_usuario',
-        
-      },
-      {
-        title: 'Nombre',
-        dataIndex: 'nombre',
-        key: 'nombre',
-      },
-      
-      {
-        title: 'Fecha_Creacion',
-        dataIndex: 'fecha_creacion',
-        key: 'fecha_creacion',
-      },
-      
-      {
-        title: 'Fecha_Actualizacion',
-        dataIndex: 'fecha_actualizacion',
-        key: 'fecha_actualizacion',
-      },
+      title: 'ID Usuario',
+      dataIndex: 'id_usuario',
+      key: 'id_usuario',
+    },
+    {
+      title: 'Nombre',
+      dataIndex: 'nombre',
+      key: 'nombre',
+    },
+    {
+      title: 'Fecha Creación',
+      dataIndex: 'fecha_creacion',
+      key: 'fecha_creacion',
+    },
+    {
+      title: 'Fecha Actualización',
+      dataIndex: 'fecha_actualizacion',
+      key: 'fecha_actualizacion',
+    },
   ];
 
   return (
     <>
       <Button type="primary" onClick={showDrawer}>
-        Añadir
+        Añadir Usuario
       </Button>
-      <Table columns={columns} dataSource={users}/>
-      <Drawer title="Agregar usuario" onClose={onClose} open={open} footer={<DrawerFooter/>}>
-        <Form>
-          <Form.Item label="Nombre"  name="Nombre">
-              <Input/>
+      <Table columns={columns} dataSource={users} />
+      <Drawer
+        title="Agregar usuario"
+        onClose={onClose}
+        open={open}
+        footer={<DrawerFooter />}
+      >
+        <Form onFinish={handleSubmit}>
+          <Form.Item
+            label="Nombre"
+            name="Nombre"
+            rules={[{ required: true, message: 'Por favor ingrese el nombre del usuario' }]}
+          >
+            <Input value={nombre} onChange={(e) => setNombre(e.target.value)} />
           </Form.Item>
-          <Form.Item label="Apellido"  name="Apellido">
-              <Input/>
-          </Form.Item>
+          <Button type="primary" htmlType="submit">
+            Crear Usuario
+          </Button>
         </Form>
       </Drawer>
-
     </>
   );
 }
