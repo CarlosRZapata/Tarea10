@@ -1,12 +1,13 @@
 export interface Direction {
-    ID_Direccion: number;
-    Codigo_Postal: number;
-    Calle: string;
+    id_direccion: number;
+    nombre: string;
+    codigo_postal: number;
+    calle: string;
     Colonia: string;
-    Num_Exterior: string;
-    Num_Interior: string;
+    numero_exterior: string;
+    numero_interior: string;
     Ciudad: string;
-    FechaCreacion: Date;
+    fecha_creacion: Date | null;
     fk_CreadoPor?: number | null;
     FechaActu?: Date| null;
     fk_ActualizadoPor?: number| null;
